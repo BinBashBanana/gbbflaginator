@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#383838">
+		<title>GBB flag-inator</title>
+		<meta name="description" content="Select and decode GBB flags for ChromeOS">
+		<meta name="og:title" content="GBB flag-inator">
+		<meta name="og:description" content="Select and decode GBB flags for ChromeOS">
+		<meta name="og:type" content="website">
+		<meta name="og:url" content="https://binbashbanana.github.io/gbbflaginator/">
+		<link rel="canonical" href="https://binbashbanana.github.io/gbbflaginator/">
+		<base target="_blank">
+		<style>
+			body {
+				font-family: sans-serif;
+				background-color: #282828;
+				color: #f0f0f0;
+				position: absolute;
+				width: calc(100vw - 20px);
+				height: calc(100vh - 20px);
+				left: 0px;
+				top: 0px;
+				margin: 0px;
+				padding: 10px;
+				overflow: hidden;
+				display: flex;
+				gap: 10px;
+			}
+			
+			a {
+				color: #3ec3f0;
+			}
+			
+			p {
+				font-size: 12pt;
+				line-height: 26px;
+			}
+			
+			.biggertext {
+				font-size: 14pt;
+			}
+			
+			.codeinline {
+				font-family: monospace;
+				background-color: rgba(200, 200, 200, 0.1);
+				border-radius: 4px;
+				padding: 2px 6px;
+			}
+			
+			code {
+				font-family: monospace;
+				background-color: rgba(200, 200, 200, 0.1);
+				border-radius: 6px;
+				padding: 8px 16px;
+				margin: 5px 10px 5px 0px;
+				display: block;
+				white-space: pre;
+				overflow-x: auto;
+			}
+			
+			.title {
+				position: absolute;
+				left: 0px;
+				top: 0px;
+				height: 40px;
+				line-height: 40px;
+				margin: 20px 10px;
+			}
+			
+			.column {
+				overflow-wrap: break-word;
+				min-width: 40vw;
+				max-width: 60vw;
+			}
+			
+			.column:first-of-type {
+				padding-top: 80px;
+			}
+			
+			.column:last-of-type {
+				overflow: auto;
+			}
+			
+			.topleftbox {
+				overflow: hidden;
+				height: 100px;
+			}
+			
+			.topleftbox h2 {
+				margin: 0px 0px 16px 0px;
+			}
+			
+			body[data-fancybg="inator"] {
+				background-image: url(inator.webp);
+				background-attachment: fixed;
+				background-size: 100% 100%;
+			}
+			
+			.flexoid {
+				display: none;
+				flex-direction: column;
+				height: calc(100vh - 200px);
+				gap: 10px;
+				overflow: hidden;
+			}
+			
+			.flexling {
+				overflow: hidden auto;
+				background-color: rgba(0, 0, 0, 0.1);
+			}
+			
+			.flexling>* {
+				margin: 10px 10px 20px 10px;
+			}
+			
+			.flexling>* h2 {
+				margin: 0px 0px 16px 0px;
+			}
+			
+			#modeselect label {
+				display: block;
+				margin: 6px;
+				width: max-content;
+			}
+			
+			#modeselect input {
+				vertical-align: baseline;
+				margin-right: 6px;
+			}
+			
+			#selectflagslist input {
+				transform: scale(1.5);
+				vertical-align: middle;
+				margin-right: 10px;
+			}
+			
+			#inputerror {
+				color: #ff8080;
+			}
+			
+			.bottomline {
+				margin-bottom: 0px;
+			}
+			
+			@media only screen and (max-width: 720px) {
+				body {
+					flex-direction: column;
+					overflow: hidden auto;
+				}
+				
+				.column {
+					max-width: none;
+				}
+			
+				.column:last-of-type {
+					overflow: initial;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<h1 class="title">GBB flag-inator</h1>
+		<div class="column">
+			<div class="topleftbox">
+				<h2>Mode select</h2>
+				<div id="modeselect">
+					<label><input type="radio" name="modeselect" value="selectflags" checked>Select flags</label>
+					<label><input type="radio" name="modeselect" value="decode">Decode flags</label>
+				</div>
+			</div>
+			<div class="flexoid" id="selectflags">
+				<div>
+					<h2>Your GBB flags: <span id="flagsout" class="codeinline">0x0</span></h2>
+				</div>
+				<div class="flexling" id="selectflagslist"></div>
+			</div>
+			<div class="flexoid" id="decode">
+				<div>
+					<h2>Input your GBB flags:</h2>
+					<input type="text" id="flagsinput" placeholder="0x1234ABCD">
+					<p id="inputerror"></p>
+				</div>
+				<div class="flexling" id="decodelist"></div>
+			</div>
+		</div>
+		<div class="column">
+			<h2>What are GBB flags?</h2>
+			<p>
+				From <a href="https://mrchromebox.tech/#firmware">mrchromebox.tech</a>:<br>
+				The ChromeOS firmware boot flags / Google Binary Block (GBB) flags are firmware level settings
+				stored directly in the firmware flash chip itself in a read-only (RO) area, and therefore require
+				the firmware write protect to be disabled before setting. The GBB flags control the behavior of
+				the firmware payload used to boot ChromeOS (depthcharge); they are used to set the default boot
+				mode (ChromeOS or Legacy Boot Mode), the Developer Mode boot screen timeout (2s or 30s), prevent
+				exiting Developer Mode via spacebar, and to enable Legacy Boot Mode regardless of crossystem
+				dev_boot_altfw/dev_boot_legacy setting, among other things.<br>
+				<i>Important: The GBB Flags are only valid when using the the stock firmware, or stock + RW_LEGACY
+				firmware. They have no effect (and cannot be set) when using the UEFI Full ROM firmware.</i>
+			</p>
+			<br>
+			<h2>How do I set GBB flags?</h2>
+			<p>
+				You must first <a href="https://wiki.mrchromebox.tech/Firmware_Write_Protect">disable firmware write protection</a>.
+			<p>
+			<p>
+				<i>Note that the following commands must be run as root</i><br>
+				On modern versions of ChromeOS, you can use the <span class="codeinline">futility</span> tool to
+				set the GBB flags, for example:
+				<code>futility gbb -s --flash --flags=0x4a9</code>
+				On older versions, there is a script you can call to set the GBB flags:
+				<code>/usr/share/vboot/bin/set_gbb_flags.sh 0x4a9</code>
+				<br>
+				Conversely, you can read the current GBB flags with the following command:
+				<code>futility gbb -g --flash --flags</code>
+				Or for older versions:
+				<code>/usr/share/vboot/bin/get_gbb_flags.sh</code>
+				<br>
+				The current GBB flags are also shown on the recovery/developer boot screen, after
+				<span class="codeinline">gbb.flags</span> when you press TAB.
+			</p>
+			<br>
+			<h2>Where is a list of all GBB flags?</h2>
+			<p>
+				I will try to keep this site updated as frequently as possible, but you can find the official
+				list in the <a href="https://chromium.googlesource.com/chromiumos/platform/vboot_reference/+/HEAD/firmware/2lib/include/2gbb_flags.h">ChromiumOS source code</a>.
+			</p>
+			<br>
+			<h2>Links</h2>
+			<p class="biggertext">
+				<a href="https://github.com/BinBashBanana/gbbflaginator">GitHub</a>
+			</p>
+			<p class="bottomline">Website made by OlyB</p>
+		</div>
+		<script>
+			const flagsDesc = {
+				"DEV_SCREEN_SHORT_DELAY": "Reduce the dev screen delay to 2 sec from 30 sec. Beep is also removed.",
+				"LOAD_OPTION_ROMS": "[Unsupported] BIOS should load option ROMs from arbitrary PCI devices.",
+				"ENABLE_ALTERNATE_OS": "[Unsupported] Boot a non-ChromeOS kernel.",
+				"FORCE_DEV_SWITCH_ON": "Force dev switch on, regardless of physical/keyboard dev switch. Be careful; this does not bypass FWMP.",
+				"FORCE_DEV_BOOT_USB": "Allow booting from external disk even if dev_boot_usb=0.",
+				"DISABLE_FW_ROLLBACK_CHECK": "Disable firmware rollback protection.",
+				"ENTER_TRIGGERS_TONORM": "Allow Enter key to trigger dev->tonorm screen transition.",
+				"FORCE_DEV_BOOT_ALTFW": "Allow booting altfw OSes even if dev_boot_altfw=0.",
+				"RUNNING_FAFT": "[Unsupported] Currently running FAFT tests. May enable workarounds in firmware, should not be set by the user.",
+				"DISABLE_EC_SOFTWARE_SYNC": "Disable EC software sync.",
+				"DEFAULT_DEV_BOOT_ALTFW": "Default to booting altfw OS when dev screen times out.",
+				"DISABLE_AUXFW_SOFTWARE_SYNC": "Disable auxiliary firmware (auxfw) software sync.",
+				"DISABLE_LID_SHUTDOWN": "Disable shutdown on lid closed.",
+				"DEPRECATED_FORCE_DEV_BOOT_FASTBOOT_FULL_CAP": "[Unsupported] Allow full fastboot capability in firmware even if dev_boot_fastboot_full_cap=0.",
+				"FORCE_MANUAL_RECOVERY": "Recovery mode always assumes manual recovery, even if EC_IN_RW=1.",
+				"DISABLE_FWMP": "Ignore FWMP.",
+				"ENABLE_UDC": "Enable USB Device Controller."
+			};
+			const flags = Object.keys(flagsDesc);
+			const mask = (2 ** flags.length) - 1;
+			let flagsSync = 0;
+			const modeselect = document.getElementById("modeselect");
+			const modes = {
+				"selectflags": document.getElementById("selectflags"),
+				"decode": document.getElementById("decode")
+			}
+			const modesArr = Object.keys(modes);
+			const flagsout = document.getElementById("flagsout");
+			const selectflagslist = document.getElementById("selectflagslist");
+			const flagsinput = document.getElementById("flagsinput");
+			const inputerror = document.getElementById("inputerror")
+			const decodelist = document.getElementById("decodelist");
+			
+			function updateMode() {
+				var mode = modeselect.querySelector(":checked").value;
+				for (var i = 0; i < modesArr.length; i++) {
+					modes[modesArr[i]].style.display = (modesArr[i] == mode) ? "flex" : "none";
+				}
+			}
+			
+			modeselect.addEventListener("change", updateMode, false);
+			window.addEventListener("load", function() {
+				window.setTimeout(updateMode, 0);
+			}, false);
+			
+			function getFlagNode(flag, createCheckbox) {
+				var flagContainer = document.createElement("div");
+				var flagLabel = document.createElement("label");
+				var flagName = document.createElement("h2");
+				if (createCheckbox) {
+					var checkbox = document.createElement("input");
+					checkbox.type = "checkbox";
+					checkbox.value = flag;
+					flagName.appendChild(checkbox);
+				}
+				var flagSplit = flag.split("_");
+				for (var i = 0; i < flagSplit.length - 1; i++) {
+					flagName.appendChild(document.createTextNode(flagSplit[i] + "_"));
+					flagName.appendChild(document.createElement("wbr"));
+				}
+				flagName.appendChild(document.createTextNode(flagSplit.slice(-1)[0]));
+				flagLabel.appendChild(flagName);
+				flagContainer.appendChild(flagLabel);
+				flagContainer.appendChild(document.createTextNode(flagsDesc[flag]));
+				return flagContainer;
+			}
+			
+			function updateBackground(e) {
+				if (e.ctrlKey && e.code == "KeyI") {
+					e.preventDefault();
+					if (document.body.dataset.fancybg) {
+						document.body.dataset.fancybg = "";
+					} else {
+						document.body.dataset.fancybg = "inator";
+					}
+				}
+			}
+			document.addEventListener("keydown", updateBackground, false);
+			
+			for (var i = 0; i < flags.length; i++) {
+				selectflagslist.appendChild(getFlagNode(flags[i], true));
+			}
+			
+			function resetSelectFlags() {
+				var boxes = Array.from(selectflagslist.querySelectorAll("input"));
+				for (var i = 0; i < boxes.length; i++) {
+					boxes[i].checked = false;
+				}
+				flagsout.textContent = "0x0";
+			}
+			
+			function updateFlagsOut() {
+				var outFlags = 0;
+				var checks = Array.from(selectflagslist.querySelectorAll(":checked"));
+				for (var i = 0; i < checks.length; i++) {
+					var index = flags.indexOf(checks[i].value);
+					if (index < 0) continue;
+					outFlags |= 1 << index;
+				}
+				var outFlagsText = "0x" + outFlags.toString(16);
+				flagsout.textContent = outFlagsText;
+				flagsinput.value = outFlags ? outFlagsText : "";
+				updateDecodeList(null);
+			}
+			selectflagslist.addEventListener("change", updateFlagsOut, false);
+			
+			function updateDecodeList(e) {
+				decodelist.innerHTML = "";
+				if (!flagsinput.value.startsWith("0x")) {
+					inputerror.textContent = flagsinput.value ? "Error: malformed input" : "";
+					resetSelectFlags();
+					return;
+				}
+				inputFlags = parseInt(flagsinput.value);
+				if (inputFlags > mask) {
+					inputerror.textContent = "Error: input too large";
+					resetSelectFlags();
+					return;
+				}
+				inputerror.textContent = "";
+				
+				for (var i = 0; i < flags.length; i++) {
+					if (inputFlags & (1 << i)) decodelist.appendChild(getFlagNode(flags[i]));
+				}
+				
+				if (e) {
+					var boxes = Array.from(selectflagslist.querySelectorAll("input"));
+					for (var i = 0; i < boxes.length; i++) {
+						var index = flags.indexOf(boxes[i].value);
+						if (index < 0) continue;
+						boxes[i].checked = !!(inputFlags & (1 << index));
+					}
+					flagsout.textContent = "0x" + inputFlags.toString(16);
+				}
+			}
+			flagsinput.addEventListener("keyup", updateDecodeList, false);
+		</script>
+	</body>
+</html>
