@@ -243,7 +243,7 @@
 				"DISABLE_FW_ROLLBACK_CHECK": "Disable firmware rollback protection.",
 				"ENTER_TRIGGERS_TONORM": "Allow Enter key to trigger dev->tonorm screen transition.",
 				"FORCE_DEV_BOOT_ALTFW": "Allow booting altfw OSes even if dev_boot_altfw=0.",
-				"RUNNING_FAFT": "[Unsupported] Currently running FAFT tests. May enable workarounds in firmware, should not be set by the user.",
+				"DEPRECATED_RUNNING_FAFT": "[Unsupported] Currently running FAFT tests. May enable workarounds in firmware, should not be set by the user.",
 				"DISABLE_EC_SOFTWARE_SYNC": "Disable EC software sync.",
 				"DEFAULT_DEV_BOOT_ALTFW": "Default to booting altfw OS when dev screen times out.",
 				"DISABLE_AUXFW_SOFTWARE_SYNC": "Disable auxiliary firmware (auxfw) software sync.",
@@ -251,10 +251,11 @@
 				"DEPRECATED_FORCE_DEV_BOOT_FASTBOOT_FULL_CAP": "[Unsupported] Allow full fastboot capability in firmware even if dev_boot_fastboot_full_cap=0.",
 				"FORCE_MANUAL_RECOVERY": "Recovery mode always assumes manual recovery, even if EC_IN_RW=1.",
 				"DISABLE_FWMP": "Ignore FWMP.",
-				"ENABLE_UDC": "Enable USB Device Controller."
+				"ENABLE_UDC": "Enable USB Device Controller.",
+				"FORCE_CSE_SYNC": "Always sync CSE, even if it is same as CBFS CSE."
 			};
 			const flags = Object.keys(flagsDesc);
-			const mask = (2 ** flags.length) - 1;
+			const mask = (1 << flags.length) - 1;
 			let flagsSync = 0;
 			const modeselect = document.getElementById("modeselect");
 			const modes = {
@@ -267,6 +268,8 @@
 			const flagsinput = document.getElementById("flagsinput");
 			const inputerror = document.getElementById("inputerror")
 			const decodelist = document.getElementById("decodelist");
+			const queries = new URLSearchParams(location.search);
+			const presetFlags = queries.get("flags");
 			
 			function updateMode() {
 				var mode = modeselect.querySelector(":checked").value;
@@ -277,7 +280,14 @@
 			
 			modeselect.addEventListener("change", updateMode, false);
 			window.addEventListener("load", function() {
-				window.setTimeout(updateMode, 0);
+				window.setTimeout(function() {
+					if (presetFlags) {
+						flagsinput.value = presetFlags;
+						modeselect.querySelector("[value=decode]").checked = true;
+					}
+					updateDecodeList(true);
+					updateMode();
+				}, 0);
 			}, false);
 			
 			function getFlagNode(flag, createCheckbox) {
