@@ -188,7 +188,7 @@
 		<div class="column">
 			<h2>What are GBB flags?</h2>
 			<p>
-				From <a href="https://mrchromebox.tech/#firmware">mrchromebox.tech</a>:<br>
+				From <a href="https://docs.mrchromebox.tech/docs/firmware/types.html#chromeos-firmware-boot-flags-gbb-flags">docs.mrchromebox.tech</a>:<br>
 				The ChromeOS firmware boot flags / Google Binary Block (GBB) flags are firmware level settings
 				stored directly in the firmware flash chip itself in a read-only (RO) area, and therefore require
 				the firmware write protect to be disabled before setting. The GBB flags control the behavior of
@@ -202,10 +202,10 @@
 			<br>
 			<h2>How do I set GBB flags?</h2>
 			<p>
-				You must first <a href="https://wiki.mrchromebox.tech/Firmware_Write_Protect">disable firmware write protection</a>.
+				You must first <a href="https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html">disable firmware write protection</a>.
 			<p>
 			<p>
-				<i>Note that the following commands must be run as root</i><br>
+				<i>Note that the following commands must be run as root.</i><br>
 				On modern versions of ChromeOS, you can use the <span class="codeinline">futility</span> tool to
 				set the GBB flags, for example:
 				<code>futility gbb -s --flash --flags=0x4a9</code>
