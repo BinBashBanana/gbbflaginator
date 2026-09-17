@@ -254,7 +254,8 @@
 				"FORCE_MANUAL_RECOVERY": "Recovery mode always assumes manual recovery, even if EC_IN_RW=1.",
 				"DISABLE_FWMP": "Ignore FWMP.",
 				"ENABLE_UDC": "Enable USB Device Controller.",
-				"FORCE_CSE_SYNC": "Always sync CSE, even if it is same as CBFS CSE."
+				"FORCE_CSE_SYNC": "Always sync CSE, even if it is same as CBFS CSE.",
+				"BYPASS_EC_RW_UPDATE": "Bypass EC RW update by forcing the expected EC RW hash to match active EC RW hash."
 			};
 			const flags = Object.keys(flagsDesc);
 			const mask = (1 << flags.length) - 1;
